@@ -1,4 +1,92 @@
+export const _productose = (index: number) =>
+  [
+    'Billy Stoltenberg',
+    'Eloise Ebert',
+    'Teresa Luettgen',
+    'Salvador Mayert',
+    'Dr. Guadalupe Rath',
+    'Kelvin Pouros',
+    'Thelma Langworth',
+    'Kristen Wunsch',
+    'Steve Welch',
+  ][index];
+
+
 export const _id = (index: number) => `e99f09a7-dd88-49d5-b1c8-1daf80c2d7b${index}`;
+
+  export const _fullName = (index: number) =>
+    [
+      'Billy Stoltenberg',
+      'Eloise Ebert',
+      'Teresa Luettgen',
+      'Salvador Mayert',
+      'Dr. Guadalupe Rath',
+      'Kelvin Pouros',
+      'Thelma Langworth',
+      'Kristen Wunsch',
+      'Steve Welch',
+    ][index];
+
+    export const _email = (index: number) =>
+      [
+        'billy.stoltenberg@example.com',
+        'eloise.ebert@email.com',
+        'teresa.luettgen@test.com',
+        'salvador.mayert@random.org',
+        'guadalupe.rath@example.com',
+        'kelvin.pouros@test.com',
+        'thelma.langworth@random.org',
+        'kristen.wunsch@email.com',
+        'steve.welch@example.com',
+      ][index];
+
+      export const _telefono = (index: number) =>
+        [
+          '984123456',
+          '937654321',
+          '912345678',
+          '956789012',
+          '987654320',
+          '965432187',
+          '934567890',
+          '978321654',
+          '943210987',
+          '953476821',
+        ][index];
+     
+  export const _sexo = (index: number) =>
+    [
+      'Masculino',
+      'Femenino',
+      'Femenino',
+      'Masculino',
+      'Femenino',
+      'Masculino',
+      'Femenino',
+      'Femenino',
+      'Masculino',
+    ][index];
+  
+
+export const _edad = (index: number) =>
+  [
+    '24',
+    '32',
+    '56',
+    '45',
+    '19',
+    '37',
+    '29',
+    '54',
+    '71',
+    '33',
+  ][index];
+//====================================================================
+//====================================================================
+//====================================================================
+//====================================================================
+//====================================================================
+//====================================================================
 
 export const _times = (index: number) =>
   // 'MM/DD/YYYY'
@@ -27,34 +115,6 @@ export const _times = (index: number) =>
     '06/27/2024',
     '10/19/2023',
     '08/09/2024',
-  ][index];
-
-export const _fullName = (index: number) =>
-  [
-    'Billy Stoltenberg',
-    'Eloise Ebert',
-    'Teresa Luettgen',
-    'Salvador Mayert',
-    'Dr. Guadalupe Rath',
-    'Kelvin Pouros',
-    'Thelma Langworth',
-    'Kristen Wunsch',
-    'Steve Welch',
-    'Brian Jacobs',
-    'Lillie Schultz',
-    'Mr. Conrad Spinka',
-    'Charlene Krajcik',
-    'Kerry Kuhlman',
-    'Betty Hammes',
-    'Tony Paucek PhD',
-    'Sherri Davis',
-    'Angel Rolfson-Kulas',
-    'Dr. Lee Doyle-Grant',
-    'Cheryl Romaguera',
-    'Billy Braun',
-    'Adam Trantow',
-    'Brandon Von',
-    'Willis Ankunding',
   ][index];
 
 export const _price = (index: number) =>

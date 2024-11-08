@@ -4,7 +4,7 @@ import { SvgColor } from 'src/components/svg-color';
 // ----------------------------------------------------------------------
 
 const icon = (name: string) => (
-  <SvgColor width="100%" height="100%" src={`assets/icons/${name}.svg`} />
+  <SvgColor width="100%" height="100%" src={`/assets/icons/navbar/${name}.svg`} />
 );
 
 export const navData = [
@@ -16,17 +16,17 @@ export const navData = [
   {
     title: 'Ventas',
     path: '/venta',
-    icon: icon('ic-user'),
+    icon: icon('sale'),
   },
   {
-    title: 'Productsos',
+    title: 'Productos',
     path: '/producto',
-    icon: icon('assets/icons/products.svg'),
+    icon: icon('/products'),
   },
   {
     title: 'Clientes',
     path: '/cliente',
-    icon: icon('ic-user'),
+    icon: icon('/customers'),
   },
   {
     title: 'Usuarios',

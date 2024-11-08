@@ -10,7 +10,7 @@ export default function Page() {
   return (
     <>
       <Helmet>
-        <title> {`Usuarios - ${CONFIG.appName}`}</title>
+        <title> {`Ventas - ${CONFIG.appName}`}</title>
       </Helmet>
 
       <UserView />
