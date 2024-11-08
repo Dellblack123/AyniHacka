@@ -10,49 +10,87 @@ import { useRouter } from 'src/routes/hooks';
 import { Iconify } from 'src/components/iconify';
 import axios from 'axios';
 
+// Define el tipo de errores para TypeScript
+type Errors = {
+  ruc?: string;
+  companyName?: string;
+  email?: string;
+  password?: string;
+  cellphone?: string;
+};
+
 // ----------------------------------------------------------------------
 
 export function RegisterView() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [ruc, setRuc] = useState('10720254439');
-  const [email, setEmail] = useState('juan.perez@example.com');
-  const [password, setPassword] = useState('contraseña123');
+  const [ruc, setRuc] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [cellphone, setCellphone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
 
-  const handleSignIn = useCallback(async () => {
+  const handleRegisterUser = useCallback(async () => {
+    // Validar campos vacíos
+    const newErrors: Errors = {};
+    if (!ruc) newErrors.ruc = 'Completa el campo';
+    if (!companyName) newErrors.companyName = 'Completa el campo';
+    if (!email) newErrors.email = 'Completa el campo';
+    if (!password) newErrors.password = 'Completa el campo';
+    if (!cellphone) newErrors.cellphone = 'Completa el campo';
+
+    setErrors(newErrors);
+
+    // Si hay errores, detener el registro
+    if (Object.keys(newErrors).length > 0) return;
+
     setLoading(true);
     try {
-      const response = await axios.post('https://backend-ayni.azurewebsites.net/api/user/login', {
+      const response = await axios.post('https://backend-ayni.azurewebsites.net/api/user/register', {
+        ruc,
+        companyName,
         email,
         password,
+        cellphone,
       });
 
-      if (response.status === 200 && response.data.token) {
-        // Guardar el token en localStorage
-        localStorage.setItem('token', response.data.token);
-
-        // Redirigir al dashboard
-        router.push('/dashboard');
+      if (response.status === 201) {
+        router.push('/');
       } else {
-        alert('Error al iniciar sesión. Por favor, verifica tus credenciales.');
+        alert('Error al registrarse. Por favor, verifica los datos ingresados.');
       }
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
-      alert('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      console.error('Error al registrarse:', error);
+      alert('Error al registrarse. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
     }
-  }, [email, password, router]);
+  }, [ruc, companyName, email, password, cellphone, router]);
 
   const renderForm = (
     <Box display="flex" flexDirection="column" alignItems="flex-end">
       <TextField
         fullWidth
-        name="email"
+        name="ruc"
         label="RUC"
         value={ruc}
         onChange={(e) => setRuc(e.target.value)}
+        error={!!errors.ruc}
+        helperText={errors.ruc}
+        InputLabelProps={{ shrink: true }}
+        sx={{ mb: 3 }}
+      />
+
+      <TextField
+        fullWidth
+        name="companyName"
+        label="Nombre de la Empresa"
+        value={companyName}
+        onChange={(e) => setCompanyName(e.target.value)}
+        error={!!errors.companyName}
+        helperText={errors.companyName}
         InputLabelProps={{ shrink: true }}
         sx={{ mb: 3 }}
       />
@@ -60,16 +98,26 @@ export function RegisterView() {
       <TextField
         fullWidth
         name="email"
-        label="Correo electronico"
+        label="Correo electrónico"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        error={!!errors.email}
+        helperText={errors.email}
         InputLabelProps={{ shrink: true }}
         sx={{ mb: 3 }}
       />
 
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        ¿Olvidaste tu contraseña?
-      </Link>
+      <TextField
+        fullWidth
+        name="cellphone"
+        label="Celular"
+        value={cellphone}
+        onChange={(e) => setCellphone(e.target.value)}
+        error={!!errors.cellphone}
+        helperText={errors.cellphone}
+        InputLabelProps={{ shrink: true }}
+        sx={{ mb: 3 }}
+      />
 
       <TextField
         fullWidth
@@ -77,6 +125,8 @@ export function RegisterView() {
         label="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        error={!!errors.password}
+        helperText={errors.password}
         InputLabelProps={{ shrink: true }}
         type={showPassword ? 'text' : 'password'}
         InputProps={{
@@ -97,10 +147,10 @@ export function RegisterView() {
         type="submit"
         color="inherit"
         variant="contained"
-        onClick={handleSignIn}
+        onClick={handleRegisterUser}
         loading={loading}
       >
-        Ingresar
+        Registrarse
       </LoadingButton>
     </Box>
   );
@@ -108,11 +158,11 @@ export function RegisterView() {
   return (
     <>
       <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
-        <Typography variant="h5">Loggin</Typography>
+        <Typography variant="h5">Regístrate</Typography>
         <Typography variant="body2" color="text.secondary">
-          ¿Aun no estas registrado?
-          <Link variant="subtitle2" sx={{ ml: 0.5 }}>
-            Empezar ya
+          ¿Ya tienes una cuenta?
+          <Link variant="subtitle2" sx={{ ml: 0.5 }} onClick={() => router.push('/')}>
+            Inicia sesión
           </Link>
         </Typography>
       </Box>
