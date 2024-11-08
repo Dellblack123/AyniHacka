@@ -99,8 +99,8 @@ export function SignInView() {
       <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
         <Typography variant="h5">Loggin</Typography>
         <Typography variant="body2" color="text.secondary">
-          ¿Aun no estas registrado?
-          <Link variant="subtitle2" sx={{ ml: 0.5 }}>
+          ¿Aun no estas registrado? javascript Copiar código
+          <Link variant="subtitle2" sx={{ ml: 0.5 }} onClick={() => router.push('/register')}>
             Empezar ya
           </Link>
         </Typography>
