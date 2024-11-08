@@ -12,11 +12,12 @@ import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
-export function SignInView() {
+export function RegisterView() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('correo@ejemplo.com');
-  const [password, setPassword] = useState('contraseña_segura');
+  const [ruc, setRuc] = useState('10720254439');
+  const [email, setEmail] = useState('juan.perez@example.com');
+  const [password, setPassword] = useState('contraseña123');
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = useCallback(async () => {
@@ -49,7 +50,17 @@ export function SignInView() {
       <TextField
         fullWidth
         name="email"
-        label="Corro electronico"
+        label="RUC"
+        value={ruc}
+        onChange={(e) => setRuc(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{ mb: 3 }}
+      />
+
+      <TextField
+        fullWidth
+        name="email"
+        label="Correo electronico"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         InputLabelProps={{ shrink: true }}

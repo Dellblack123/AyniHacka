@@ -10,6 +10,7 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 
 // ----------------------------------------------------------------------
 
+export const RegisterPage =  lazy( () => import('src/pages/user-register'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const ClientePage = lazy(() => import('src/pages/cliente'));
@@ -54,6 +55,14 @@ export function Router() {
       element: (
         <AuthLayout>
           <SignInPage />
+        </AuthLayout>
+      ),
+    },
+    {
+      path: '/register',
+      element: (
+        <AuthLayout>
+          <RegisterPage />
         </AuthLayout>
       ),
     },
