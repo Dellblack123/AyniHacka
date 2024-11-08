@@ -1,7 +1,5 @@
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
-
 import { useEffect } from 'react';
-
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/material/styles';
@@ -10,17 +8,17 @@ import Drawer, { drawerClasses } from '@mui/material/Drawer';
 
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
-
 import { varAlpha } from 'src/theme/styles';
 
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 
-import { NavUpgrade } from '../components/nav-upgrade';
 import { WorkspacesPopover } from '../components/workspaces-popover';
 
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
 
+// ----------------------------------------------------------------------
+// Tipos y propiedades
 // ----------------------------------------------------------------------
 
 export type NavContentProps = {
@@ -37,6 +35,10 @@ export type NavContentProps = {
   workspaces: WorkspacesPopoverProps['data'];
   sx?: SxProps<Theme>;
 };
+
+// ----------------------------------------------------------------------
+// Navegación para pantallas grandes
+// ----------------------------------------------------------------------
 
 export function NavDesktop({
   sx,
@@ -55,15 +57,18 @@ export function NavDesktop({
         top: 0,
         left: 0,
         height: 1,
-        display: 'none',
+        display: 'none', // Oculto por defecto
         position: 'fixed',
         flexDirection: 'column',
-        bgcolor: 'var(--layout-nav-bg)',
+        bgcolor: 'var(--layout-nav-bg)', // Usamos variables CSS
         zIndex: 'var(--layout-nav-zIndex)',
         width: 'var(--layout-nav-vertical-width)',
-        borderRight: `1px solid var(--layout-nav-border-color, ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)})`,
+        borderRight: `1px solid var(--layout-nav-border-color, ${varAlpha(
+          theme.vars.palette.grey['500Channel'],
+          0.12
+        )})`,
         [theme.breakpoints.up(layoutQuery)]: {
-          display: 'flex',
+          display: 'flex', // Visible en pantallas grandes
         },
         ...sx,
       }}
@@ -73,6 +78,8 @@ export function NavDesktop({
   );
 }
 
+// ----------------------------------------------------------------------
+// Navegación para pantallas móviles
 // ----------------------------------------------------------------------
 
 export function NavMobile({
@@ -87,10 +94,9 @@ export function NavMobile({
 
   useEffect(() => {
     if (open) {
-      onClose();
+      onClose(); // Cierra el drawer si se detecta un cambio de ruta
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, open, onClose]); // Dependencias corregidas
 
   return (
     <Drawer
@@ -113,23 +119,29 @@ export function NavMobile({
 }
 
 // ----------------------------------------------------------------------
+// Contenido de navegación compartido
+// ----------------------------------------------------------------------
 
 export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
   const pathname = usePathname();
 
   return (
     <>
+      {/* Logo de la aplicación */}
       <Logo />
 
+      {/* Área superior personalizada */}
       {slots?.topArea}
 
+      {/* Popover para workspaces */}
       <WorkspacesPopover data={workspaces} sx={{ my: 2 }} />
 
+      {/* Scrollable list de navegación */}
       <Scrollbar fillContent>
         <Box component="nav" display="flex" flex="1 1 auto" flexDirection="column" sx={sx}>
           <Box component="ul" gap={0.5} display="flex" flexDirection="column">
             {data.map((item) => {
-              const isActived = item.path === pathname;
+              const isActived = item.path === pathname; // Detecta ruta activa
 
               return (
                 <ListItem disableGutters disablePadding key={item.title}>
@@ -157,14 +169,17 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
                       }),
                     }}
                   >
+                    {/* Icono del ítem */}
                     <Box component="span" sx={{ width: 24, height: 24 }}>
                       {item.icon}
                     </Box>
 
+                    {/* Título del ítem */}
                     <Box component="span" flexGrow={1}>
                       {item.title}
                     </Box>
 
+                    {/* Información adicional */}
                     {item.info && item.info}
                   </ListItemButton>
                 </ListItem>
@@ -174,9 +189,10 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
         </Box>
       </Scrollbar>
 
+      {/* Área inferior personalizada */}
       {slots?.bottomArea}
 
-      <NavUpgrade />
+      {/* Sección de actualizaciones */}
     </>
   );
 }
