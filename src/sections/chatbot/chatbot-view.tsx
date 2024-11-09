@@ -30,7 +30,7 @@ function procesarRespuesta(respuesta: string): string {
   respuesta = respuesta.replace(/Title:.*Content:.*/g, '');
 
   // Agrega saltos de línea después de cada punto final o dos puntos
-  respuesta = respuesta.replace(/(\.|\:)\s*/g, '$1\n\n');
+  respuesta = respuesta.replace(/(\.|:)\s*/g, '$1\n\n');
 
   // Convierte listas numeradas (1., 2., etc.) en texto con negritas
   respuesta = respuesta.replace(/^(\d+\.)\s*(.*)$/gm, '**$1** $2');
@@ -46,8 +46,6 @@ function procesarRespuesta(respuesta: string): string {
   // Elimina espacios innecesarios y retorna la respuesta limpia
   return respuesta.trim();
 }
-
-
 
 // Función para realizar la consulta a la API
 async function query(data: Record<string, string>): Promise<string> {
