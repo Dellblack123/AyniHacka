@@ -12,7 +12,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export type ClientProps = {
+export type SaleProps = {
   id: string;
   name: string;
   clientType: string;
@@ -23,15 +23,15 @@ export type ClientProps = {
   customerSegment: string;
 };
 
-type ClientTableRowProps = {
-  row: ClientProps;
+type SaleTableRowProps = {
+  row: SaleProps;
   selected: boolean;
   onSelectRow: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-export function ClientTableRow({ row, selected, onSelectRow, onEdit, onDelete }: ClientTableRowProps) {
+export function ClientTableRow({ row, selected, onSelectRow, onEdit, onDelete }: SaleTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {

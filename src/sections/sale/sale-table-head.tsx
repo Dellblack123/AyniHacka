@@ -9,7 +9,7 @@ import { visuallyHidden } from './utils';
 
 // ----------------------------------------------------------------------
 
-type ClientTableHeadProps = {
+type SaleTableHeadProps = {
   orderBy: string;
   rowCount: number;
   numSelected: number;
@@ -27,7 +27,7 @@ export function ProductTableHead({
   headLabel,
   numSelected,
   onSelectAllRows,
-}: ClientTableHeadProps) {
+}: SaleTableHeadProps) {
   return (
     <TableHead>
       <TableRow>
