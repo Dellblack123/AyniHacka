@@ -1,34 +1,119 @@
-import Grid from '@mui/material/Unstable_Grid2';
+import React, { useState, useCallback, useEffect } from 'react';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { _tasks, _posts, _timeline } from 'src/_mock';
+import Grid from '@mui/material/Unstable_Grid2';
+
 import { DashboardContent } from 'src/layouts/dashboard';
-
-import { AnalyticsNews } from '../analytics-news';
-import { AnalyticsTasks } from '../analytics-tasks';
-import { AnalyticsCurrentVisits } from '../analytics-current-visits';
-import { AnalyticsOrderTimeline } from '../analytics-order-timeline';
-import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
-import { AnalyticsTrafficBySite } from '../analytics-traffic-by-site';
-import { AnalyticsCurrentSubject } from '../analytics-current-subject';
+import { AnalyticsCurrentVisits } from '../analytics-current-visits';
+import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
-
-// ----------------------------------------------------------------------
+import axios from 'axios';
 
 export function OverviewAnalyticsView() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categoriesCount, setCategoriesCount] = useState<Record<string, number>>({});
+  const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('https://backend-ayni.azurewebsites.net/api/products', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setProducts(response.data);
+
+        // Calcular la cantidad de productos por categoría
+        const counts = response.data.reduce((acc: Record<string, number>, product: any) => {
+          acc[product.category] = (acc[product.category] || 0) + product.totalPrice;
+          return acc;
+        }, {});
+        setCategoriesCount(counts);
+
+        // Calcular la sumatoria de cantidad vendida por categoría
+        const sums = response.data.reduce((acc: Record<string, number>, product: any) => {
+          acc[product.category] = (acc[product.category] || 0) + product.quantity;
+          return acc;
+        }, {});
+        setSumByCategory(sums);
+      } else {
+        setError('Error al obtener los productos.');
+      }
+    } catch (err: any) {
+      console.error('Error al obtener los productos:', err);
+      setError(err.response?.data?.message || 'Error desconocido al obtener los productos.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6">Cargando productos...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!products.length) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6">No hay productos disponibles.</Typography>
+      </Box>
+    );
+  }
+
+  // Preparar datos para las gráficas
+  const countData = Object.entries(categoriesCount).map(([label, value]) => ({
+    label,
+    value,
+  }));
+
+  const volumeData = Object.entries(sumByCategory).map(([label, value]) => ({
+    label,
+    value,
+  }));
+
+  // Calcular el total de ventas de todos los productos
+  const totalSales = products.reduce((acc, product) => acc + product.totalPrice, 0);
+  const totalVolume = products.reduce((acc, product) => acc + product.quantity, 0);
+
   return (
+    
     <DashboardContent maxWidth="xl">
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
-        Hi, Welcome back 👋
+        Hola, Bienvenido de nuevo 👋
       </Typography>
 
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Weekly sales"
+            title="Venta total"
             percent={2.6}
-            total={714000}
+            total={totalSales}
             icon={<img alt="icon" src="/assets/icons/glass/ic-glass-bag.svg" />}
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -39,9 +124,9 @@ export function OverviewAnalyticsView() {
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="New users"
+            title="Volumen Total"
             percent={-0.1}
-            total={1352831}
+            total={totalVolume}
             color="secondary"
             icon={<img alt="icon" src="/assets/icons/glass/ic-glass-users.svg" />}
             chart={{
@@ -79,19 +164,29 @@ export function OverviewAnalyticsView() {
           />
         </Grid>
 
-        <Grid xs={12} md={6} lg={4}>
-          <AnalyticsCurrentVisits
-            title="Current visits"
-            chart={{
-              series: [
-                { label: 'America', value: 3500 },
-                { label: 'Asia', value: 2500 },
-                { label: 'Europe', value: 1500 },
-                { label: 'Africa', value: 500 },
-              ],
-            }}
-          />
-        </Grid>
+        <Grid container spacing={5}>
+  <Grid xs={12} md={6} lg={6}>
+    <AnalyticsCurrentVisits
+      title="Categoría por Productos"
+      chart={{
+        series: countData,
+      }}
+    />
+  </Grid>
+
+  <Grid xs={12} md={6} lg={6}>
+    <AnalyticsCurrentVisits
+      title="Volumen de Venta por Categoría"
+      chart={{
+        series: volumeData,
+      }}
+    />
+  </Grid>
+</Grid>
+
+
+
+      
 
         <Grid xs={12} md={6} lg={8}>
           <AnalyticsWebsiteVisits
@@ -120,8 +215,7 @@ export function OverviewAnalyticsView() {
             }}
           />
         </Grid>
-
-        </Grid>
+      </Grid>
     </DashboardContent>
   );
 }
