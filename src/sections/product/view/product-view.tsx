@@ -9,6 +9,8 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Drawer from '@mui/material/Drawer';
+import TextField from '@mui/material/TextField';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
@@ -21,12 +23,27 @@ import { ClienteTableToolbar } from '../product-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
 import type { ProductProps } from '../product-table-row';
+import { useTable } from '../use-table';
 
 export function ProductView() {
   const table = useTable();
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [filterName, setFilterName] = useState('');
-  
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    quantity: 0,
+    unitOfMeasure: '',
+    cost: 0,
+    price: 0,
+    category: '',
+  });
+
+  // Función para abrir el drawer
+  const handleOpenDrawer = () => setDrawerOpen(true);
+  // Función para cerrar el drawer
+  const handleCloseDrawer = () => setDrawerOpen(false);
+
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('token');
@@ -64,6 +81,7 @@ export function ProductView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={handleOpenDrawer}
         >
           Nuevo Producto
         </Button>
@@ -95,15 +113,15 @@ export function ProductView() {
                   )
                 }
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'quantity', label: 'Quantity' },
-                  { id: 'unitOfMeasure', label: 'Unit' },
-                  { id: 'cost', label: 'Cost' },
-                  { id: 'price', label: 'Price' },
-                  { id: 'category', label: 'Category' },
-                  { id: 'totalPrice', label: 'Total Price' },
-                  { id: 'totalCost', label: 'Total Cost' },
-                  { id: 'totalProfit', label: 'Total Profit' },
+                  { id: 'name', label: 'Nombre' },
+                  { id: 'quantity', label: 'Cantidad' },
+                  { id: 'unitOfMeasure', label: 'Unidad' },
+                  { id: 'cost', label: 'Costo' },
+                  { id: 'price', label: 'Precio' },
+                  { id: 'category', label: 'Categoría' },
+                  { id: 'totalPrice', label: 'Precio Total' },
+                  { id: 'totalCost', label: 'Costo Total' },
+                  { id: 'totalProfit', label: 'Beneficio' },
                   { id: '' },
                 ]}
               />
@@ -143,75 +161,65 @@ export function ProductView() {
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      {/* Drawer para añadir un nuevo producto */}
+      <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
+        <Box p={3} width={300} role="presentation">
+          <Typography variant="h6" gutterBottom>
+            Nuevo Producto
+          </Typography>
+          <TextField
+            label="Nombre"
+            fullWidth
+            margin="normal"
+            value={newProduct.name}
+            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+          />
+          <TextField
+            label="Cantidad"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={newProduct.quantity}
+            onChange={(e) => setNewProduct({ ...newProduct, quantity: Number(e.target.value) })}
+          />
+          <TextField
+            label="Unidad de Medida"
+            fullWidth
+            margin="normal"
+            value={newProduct.unitOfMeasure}
+            onChange={(e) => setNewProduct({ ...newProduct, unitOfMeasure: e.target.value })}
+          />
+          <TextField
+            label="Costo"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={newProduct.cost}
+            onChange={(e) => setNewProduct({ ...newProduct, cost: Number(e.target.value) })}
+          />
+          <TextField
+            label="Precio"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={newProduct.price}
+            onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+          />
+          <TextField
+            label="Categoría"
+            fullWidth
+            margin="normal"
+            value={newProduct.category}
+            onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+          />
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="contained" onClick={handleCloseDrawer}>
+              Guardar
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </DashboardContent>
   );
-}
-
-
-// ----------------------------------------------------------------------
-
-export function useTable() {
-  const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('name');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-
-  const onSort = useCallback(
-    (id: string) => {
-      const isAsc = orderBy === id && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(id);
-    },
-    [order, orderBy]
-  );
-
-  const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
-    if (checked) {
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  }, []);
-
-  const onSelectRow = useCallback(
-    (inputValue: string) => {
-      const newSelected = selected.includes(inputValue)
-        ? selected.filter((value) => value !== inputValue)
-        : [...selected, inputValue];
-
-      setSelected(newSelected);
-    },
-    [selected]
-  );
-
-  const onResetPage = useCallback(() => {
-    setPage(0);
-  }, []);
-
-  const onChangePage = useCallback((event: unknown, newPage: number) => {
-    setPage(newPage);
-  }, []);
-
-  const onChangeRowsPerPage = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      onResetPage();
-    },
-    [onResetPage]
-  );
-
-  return {
-    page,
-    order,
-    onSort,
-    orderBy,
-    selected,
-    rowsPerPage,
-    onSelectRow,
-    onResetPage,
-    onChangePage,
-    onSelectAllRows,
-    onChangeRowsPerPage,
-  };
 }

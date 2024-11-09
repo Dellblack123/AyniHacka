@@ -8,7 +8,6 @@ import IconButton from '@mui/material/IconButton';
 import MenuList from '@mui/material/MenuList';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -55,12 +54,12 @@ export function ProductTableRow({ row, selected, onSelectRow }: ProductTableRowP
 
         <TableCell>{row.quantity}</TableCell>
         <TableCell>{row.unitOfMeasure}</TableCell>
-        <TableCell>{row.cost.toFixed(2)}</TableCell>
-        <TableCell>{row.price.toFixed(2)}</TableCell>
+        <TableCell>{`S/. ${row.cost.toFixed(2)}` }</TableCell>
+        <TableCell>{`S/. ${row.price.toFixed(2)}`}</TableCell>
         <TableCell>{row.category}</TableCell>
-        <TableCell>{row.totalPrice.toFixed(2)}</TableCell>
-        <TableCell>{row.totalCost.toFixed(2)}</TableCell>
-        <TableCell>{row.totalProfit.toFixed(2)}</TableCell>
+        <TableCell>{`S/. ${row.totalPrice.toFixed(2)}`}</TableCell>
+        <TableCell>{`S/. ${row.totalCost.toFixed(2)}`}</TableCell>
+        <TableCell>{`S/. ${row.totalProfit.toFixed(2)}`}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
