@@ -23,31 +23,65 @@ export function ChatbotView() {
   const [pregunta, setPregunta] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Respuestas predefinidas como respaldo
   const respuestasPredefinidas: Record<string, string> = {
     hola: '¡Hola! ¿En qué puedo ayudarte?',
     ayuda: 'Claro, estoy aquí para ayudarte. Por favor, dime más.',
     tiempo: 'Actualmente no tengo información del clima. ¡Pronto podré ayudarte con eso!',
     default: 'Lo siento, no entiendo tu pregunta. ¿Podrías reformularla?',
   };
-  
 
-  const handleSendClick = () => {
+  // Función para procesar las respuestas recibidas de la API
+  const procesarRespuesta = (respuesta: string): string => {
+    // Aquí puedes agregar lógica para ajustar o filtrar la respuesta según tus necesidades
+    return respuesta.trim() || respuestasPredefinidas.default;
+  };
+
+  const handleSendClick = async () => {
     if (!pregunta.trim()) return;
 
     const nuevaPregunta: HistorialItem = { tipo: 'pregunta', texto: pregunta };
-    setHistorial((prev) => [...prev, nuevaPregunta]);
-    setPregunta('');
+    setHistorial((prevHistorial) => [...prevHistorial, nuevaPregunta]);
     setLoading(true);
 
-    setTimeout(() => {
-      const preguntaNormalizada = pregunta.trim().toLowerCase();
-      const respuesta =
-        respuestasPredefinidas[preguntaNormalizada] || respuestasPredefinidas.default;
+    try {
+      // Llamada a la API
+      const response = await fetch(
+        'https://www.stack-ai.com/form/1cdaa2ca-86d1-408e-b311-af8274d55d9c/46c4878c-4945-4237-9a03-9370eeab5ef7/672f6cff7c797a2d36e920a1',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer 563769f1-0408-4543-9178-1be60f8cfac3',
+          },
+          body: JSON.stringify({ 
+            'in-0': pregunta, 
+            user_id: 'rubendotru@gmail.com' 
+          }),
+        }
+      );
 
-      const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuesta };
-      setHistorial((prev) => [...prev, nuevaRespuesta]);
+      if (!response.ok) {
+        throw new Error('Error al conectar con la API');
+      }
+
+      const data = await response.json();
+      const respuestaOriginal = data.outputs?.['out-0'] || respuestasPredefinidas.default;
+      const respuestaProcesada = procesarRespuesta(respuestaOriginal);
+
+      const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuestaProcesada };
+      setHistorial((prevHistorial) => [...prevHistorial, nuevaRespuesta]);
+    } catch (error) {
+      console.error('Error al obtener la respuesta de la API:', error);
+      const errorRespuesta: HistorialItem = {
+        tipo: 'respuesta',
+        texto: 'Hubo un error al obtener la respuesta. Por favor, inténtalo nuevamente.',
+      };
+      setHistorial((prevHistorial) => [...prevHistorial, errorRespuesta]);
+    } finally {
       setLoading(false);
-    }, 500);
+      setPregunta('');
+    }
   };
 
   return (
