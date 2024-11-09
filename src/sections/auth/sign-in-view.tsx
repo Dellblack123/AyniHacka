@@ -26,11 +26,12 @@ export function SignInView() {
         email,
         password,
       });
-
+  
       if (response.status === 200 && response.data.token) {
-        // Guardar el token en localStorage
+        // Guardar el token y la información del usuario en localStorage
         localStorage.setItem('token', response.data.token);
-
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+  
         // Redirigir al dashboard
         router.push('/dashboard');
       } else {
@@ -43,6 +44,7 @@ export function SignInView() {
       setLoading(false);
     }
   }, [email, password, router]);
+  
 
   const renderForm = (
     <Box display="flex" flexDirection="column" alignItems="flex-end">

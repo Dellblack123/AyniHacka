@@ -13,7 +13,8 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 export const RegisterPage =  lazy( () => import('src/pages/user-register'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
-export const ClientePage = lazy(() => import('src/pages/cliente'));
+export const ClientePage = lazy(() => import('src/pages/client'));
+export const ProductPage = lazy(() => import('src/pages/product'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
@@ -44,7 +45,8 @@ export function Router() {
       ),
       children: [
         { path: 'dashboard', element: <HomePage /> },
-        { path: 'cliente', element: <ClientePage /> },
+        { path: 'client', element: <ClientePage /> },
+        { path: 'product', element: <ProductPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },

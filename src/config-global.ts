@@ -10,6 +10,6 @@ export type ConfigValue = {
 // ----------------------------------------------------------------------
 
 export const CONFIG: ConfigValue = {
-  appName: 'Hackaton Ayni',
+  appName: 'Bisoshi',
   appVersion: packageJson.version,
 };

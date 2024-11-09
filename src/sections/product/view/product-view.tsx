@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -9,30 +10,44 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import { _clientes } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
-
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-
 import { TableNoData } from '../table-no-data';
-import { ClienteTableRow } from '../cliente-table-row';
-import { ClienteTableHead } from '../cliente-table-head';
+import { ProductTableRow } from '../product-table-row';
+import { ProductTableHead } from '../product-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
-import { ClienteTableToolbar } from '../cliente-table-toolbar';
+import { ClienteTableToolbar } from '../product-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
-import type { ClienteProps } from '../cliente-table-row';
+import type { ProductProps } from '../product-table-row';
 
-// ----------------------------------------------------------------------
-
-export function ClienteView() {
+export function ProductView() {
   const table = useTable();
-
+  const [products, setProducts] = useState<ProductProps[]>([]);
   const [filterName, setFilterName] = useState('');
+  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('https://backend-ayni.azurewebsites.net/api/products', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setProducts(response.data);
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  const dataFiltered: ClienteProps[] = applyFilter({
-    inputData: _clientes,
+  const dataFiltered = applyFilter({
+    inputData: products,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -43,14 +58,14 @@ export function ClienteView() {
     <DashboardContent>
       <Box display="flex" alignItems="center" mb={5}>
         <Typography variant="h4" flexGrow={1}>
-          Clientes
+          Productos
         </Typography>
         <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
         >
-          Nuevo Cliente
+          Nuevo Producto
         </Button>
       </Box>
 
@@ -67,24 +82,28 @@ export function ClienteView() {
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
             <Table sx={{ minWidth: 800 }}>
-              <ClienteTableHead
+              <ProductTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={_clientes.length}
+                rowCount={products.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    _clientes.map((cliente) => cliente.id)
+                    products.map((product) => product.id)
                   )
                 }
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'quantity', label: 'Quantity' },
+                  { id: 'unitOfMeasure', label: 'Unit' },
+                  { id: 'cost', label: 'Cost' },
+                  { id: 'price', label: 'Price' },
+                  { id: 'category', label: 'Category' },
+                  { id: 'totalPrice', label: 'Total Price' },
+                  { id: 'totalCost', label: 'Total Cost' },
+                  { id: 'totalProfit', label: 'Total Profit' },
                   { id: '' },
                 ]}
               />
@@ -95,7 +114,7 @@ export function ClienteView() {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ClienteTableRow
+                    <ProductTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
@@ -105,7 +124,7 @@ export function ClienteView() {
 
                 <TableEmptyRows
                   height={68}
-                  emptyRows={emptyRows(table.page, table.rowsPerPage, _clientes.length)}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, products.length)}
                 />
 
                 {notFound && <TableNoData searchQuery={filterName} />}
@@ -117,7 +136,7 @@ export function ClienteView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={_clientes.length}
+          count={products.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -127,6 +146,7 @@ export function ClienteView() {
     </DashboardContent>
   );
 }
+
 
 // ----------------------------------------------------------------------
 

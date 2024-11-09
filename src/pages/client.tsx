@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
 
-import { ClienteView } from 'src/sections/cliente/view';
+import { ClientView } from 'src/sections/client/view';
 
 // ----------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ export default function Page() {
         <title> {`Clientes - ${CONFIG.appName}`}</title>
       </Helmet>
 
-      <ClienteView />
+      <ClientView />
     </>
   );
 }
