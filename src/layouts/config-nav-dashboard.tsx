@@ -43,9 +43,4 @@ export const navData = [
     path: '/chatbot',
     icon: icon('/bot'),
   },
-  {
-    title: 'Sign in',
-    path: '/sign-in',
-    icon: icon('ic-lock'),
-  }
 ];
