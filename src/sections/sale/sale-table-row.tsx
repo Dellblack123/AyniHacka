@@ -14,14 +14,18 @@ import { Iconify } from 'src/components/iconify';
 
 export type SaleProps = {
   id: string;
-  name: string;
-  clientType: string;
-  region: string;
-  city: string;
-  zone: string;
-  contact: string;
-  customerSegment: string;
+  client: {
+    id: string;
+    name: string;
+  };
+  product: {
+    id: string; // Asegúrate de incluir esta línea para la propiedad id
+    name: string;
+  };
+  quantity: number;
+  totalAmount: number;
 };
+
 
 type SaleTableRowProps = {
   row: SaleProps;
@@ -31,7 +35,7 @@ type SaleTableRowProps = {
   onDelete: () => void;
 };
 
-export function ClientTableRow({ row, selected, onSelectRow, onEdit, onDelete }: SaleTableRowProps) {
+export function SaleTableRow({ row, selected, onSelectRow, onEdit, onDelete }: SaleTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -47,16 +51,14 @@ export function ClientTableRow({ row, selected, onSelectRow, onEdit, onDelete }:
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected} onClick={onSelectRow}>
         <TableCell component="th" scope="row">
           <Box gap={2} display="flex" alignItems="center">
-            {row.name}
+            {row.client.id}
           </Box>
         </TableCell>
 
-        <TableCell>{row.clientType}</TableCell>
-        <TableCell>{row.region}</TableCell>
-        <TableCell>{row.city}</TableCell>
-        <TableCell>{row.zone}</TableCell>
-        <TableCell>{row.contact}</TableCell>
-        <TableCell>{row.customerSegment}</TableCell>
+        <TableCell>{row.client.name}</TableCell>
+        <TableCell>{row.product.name}</TableCell>
+        <TableCell align='center'>{row.quantity}</TableCell>
+        <TableCell align='center'>{row.totalAmount.toFixed(2)}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>

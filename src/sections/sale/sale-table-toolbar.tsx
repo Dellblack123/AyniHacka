@@ -15,7 +15,7 @@ type SaleTableToolbarProps = {
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function ClientTableToolbar({ numSelected, filterName, onFilterName }: SaleTableToolbarProps) {
+export function SaleTableToolbar({ numSelected, filterName, onFilterName }: SaleTableToolbarProps) {
   return (
     <Toolbar
       sx={{
