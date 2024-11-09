@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import { Box, Typography, Card, CardContent, Grid, Chip, Stack, Divider } from '@mui/material';
 
+// Tipo para representar un curso
+type Course = {
+  id: number;
+  title: string;
+  description: string;
+  tags: string[];
+  startDate: string;
+  rating: number;
+  reviews: string;
+  image: string;
+  bgColor: string;
+  syllabus: string[];
+  video: string;
+};
+
 // Datos de ejemplo para los cursos
 const courses = [
   {
@@ -95,9 +110,8 @@ const courses = [
   },
 ];
 
-
 export function CoursesView() {
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // Estado con tipo explícito
 
   if (selectedCourse) {
     // Vista de detalles del curso

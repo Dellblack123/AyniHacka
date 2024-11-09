@@ -1,15 +1,27 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import axios from 'axios'; // Mueve esta línea aquí
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
 import Grid from '@mui/material/Unstable_Grid2';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid,
+  LabelList,
+} from 'recharts';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { AnalyticsCurrentVisits } from '../analytics-current-visits';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
-import axios from 'axios';
+
+
 
 export function OverviewAnalyticsView() {
   const [products, setProducts] = useState<any[]>([]);
@@ -162,6 +174,25 @@ const averageUnitPrice = sales.length
   ? sales.reduce((acc, sale) => acc + sale.product.price, 0) / sales.length
   : 0;
 
+  const salesByMonthAndYear = sales.reduce((acc: Record<string, any>, sale) => {
+    const date = new Date(sale.date);
+    const month = date.toLocaleString('es-ES', { month: 'long' }); // Obtener el mes en español
+    const year = date.getFullYear();
+
+    const key = `${month}-${year}`;
+    if (!acc[key]) {
+      acc[key] = {
+        month,
+        year,
+        totalAmount: 0,
+      };
+    }
+    acc[key].totalAmount += sale.totalAmount;
+    return acc;
+  }, {});
+
+  const chartData = Object.values(salesByMonthAndYear);
+
   return (
     
     <DashboardContent maxWidth="xl">
@@ -289,6 +320,36 @@ const averageUnitPrice = sales.length
               ],
             }}
           />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
+        <Grid xs={12} md={12} lg={12}>
+          <Box sx={{ p: 3, bgcolor: 'white', borderRadius: 2, boxShadow: 1 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Volumen por Mes y Año
+            </Typography>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart
+                data={chartData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => `${value.toFixed(1)} mil.`} />
+                <Legend />
+                <Bar dataKey="totalAmount" fill="#8884d8" name="Total Ventas">
+                  <LabelList dataKey="totalAmount" position="top" formatter={(value: number) => `${value.toFixed(1)} mil.`} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
         </Grid>
       </Grid>
     </DashboardContent>
