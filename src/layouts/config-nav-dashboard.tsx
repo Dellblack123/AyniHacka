@@ -14,24 +14,9 @@ export const navData = [
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Ventas',
-    path: '/venta',
-    icon: icon('sale'),
-  },
-  {
-    title: 'Productos',
-    path: '/producto',
-    icon: icon('/products'),
-  },
-  {
     title: 'Clientes',
     path: '/cliente',
     icon: icon('/customers'),
-  },
-  {
-    title: 'Usuarios',
-    path: '/user',
-    icon: icon('ic-user'),
   },
   {
     title: 'Sign in',
