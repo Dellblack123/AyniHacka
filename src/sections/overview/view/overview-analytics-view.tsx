@@ -13,6 +13,7 @@ import axios from 'axios';
 
 export function OverviewAnalyticsView() {
   const [products, setProducts] = useState<any[]>([]);
+  const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categoriesCount, setCategoriesCount] = useState<Record<string, number>>({});
@@ -55,9 +56,29 @@ export function OverviewAnalyticsView() {
     }
   }, []);
 
+  const fetchSales = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('https://backend-ayni.azurewebsites.net/api/sales', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setSales(response.data);
+      } else {
+        console.error('Error al obtener las ventas.');
+      }
+    } catch (err: any) {
+      console.error('Error al obtener las ventas:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchSales();
+  }, [fetchProducts, fetchSales]);
 
 
   if (loading) {
@@ -81,7 +102,15 @@ export function OverviewAnalyticsView() {
   if (!products.length) {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography variant="h6">No hay productos disponibles.</Typography>
+        <Typography variant="h6">Cargando productos disponibles.</Typography>
+      </Box>
+    );
+  }
+
+  if (!sales.length) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6">Cargando ventas disponibles.</Typography>
       </Box>
     );
   }
@@ -100,6 +129,38 @@ export function OverviewAnalyticsView() {
   // Calcular el total de ventas de todos los productos
   const totalSales = products.reduce((acc, product) => acc + product.totalPrice, 0);
   const totalVolume = products.reduce((acc, product) => acc + product.quantity, 0);
+
+// Calcular las ventas YTD (Year-To-Date) para cada año
+const salesByYear = sales.reduce((acc: Record<number, number>, sale) => {
+  const year = new Date(sale.date).getFullYear(); // Extraer el año de la venta
+  acc[year] = (acc[year] || 0) + sale.totalAmount; // Sumar el totalAmount por año
+  return acc;
+}, {});
+
+// Total de ventas para 2024 y 2023
+const totalSales2024 = salesByYear[2024] || 0;
+const totalSales2023 = salesByYear[2023] || 0;
+
+// Variación porcentual entre las ventas de 2024 y 2023
+const salesVariationYTD = totalSales2023
+  ? ((totalSales2024 - totalSales2023) / totalSales2023) * 100
+  : 0;
+
+
+  // Calcular el margen de ganancia bruta
+const grossProfitMargin = totalSales
+? ((totalSales - sales.reduce((acc, sale) => acc + sale.product.totalCost, 0)) / totalSales) * 100
+: 0;
+
+// Calcular la ganancia total (en valor decimal)
+const totalProfitValue = totalSales
+  ? totalSales - sales.reduce((acc, sale) => acc + sale.product.totalCost, 0)
+  : 0;
+
+// Calcular el promedio de precio unitario
+const averageUnitPrice = sales.length
+  ? sales.reduce((acc, sale) => acc + sale.product.price, 0) / sales.length
+  : 0;
 
   return (
     
@@ -138,9 +199,9 @@ export function OverviewAnalyticsView() {
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Purchase orders"
+            title="Variación Porcentual de Ventas"
             percent={2.8}
-            total={1723315}
+            total={salesVariationYTD}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic-glass-buy.svg" />}
             chart={{
@@ -152,9 +213,23 @@ export function OverviewAnalyticsView() {
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Messages"
-            percent={3.6}
-            total={234}
+            title="Margen de Ganancia Bruta"
+            percent={grossProfitMargin}
+            total={totalProfitValue}
+            color="error"
+            icon={<img alt="icon" src="/assets/icons/glass/ic-glass-message.svg" />}
+            chart={{
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+              series: [56, 30, 23, 54, 47, 40, 62, 73],
+            }}
+          />
+        </Grid>
+
+        <Grid xs={12} sm={6} md={3}>
+          <AnalyticsWidgetSummary
+            title="Promedio Precio Unitario"
+            percent={grossProfitMargin}
+            total={averageUnitPrice}
             color="error"
             icon={<img alt="icon" src="/assets/icons/glass/ic-glass-message.svg" />}
             chart={{
