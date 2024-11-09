@@ -9,7 +9,7 @@ import { visuallyHidden } from './utils';
 
 // ----------------------------------------------------------------------
 
-type ClienteTableHeadProps = {
+type ClientTableHeadProps = {
   orderBy: string;
   rowCount: number;
   numSelected: number;
@@ -19,7 +19,7 @@ type ClienteTableHeadProps = {
   onSelectAllRows: (checked: boolean) => void;
 };
 
-export function ClienteTableHead({
+export function ProductTableHead({
   order,
   onSort,
   orderBy,
@@ -27,19 +27,10 @@ export function ClienteTableHead({
   headLabel,
   numSelected,
   onSelectAllRows,
-}: ClienteTableHeadProps) {
+}: ClientTableHeadProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              onSelectAllRows(event.target.checked)
-            }
-          />
-        </TableCell>
 
         {headLabel.map((headCell) => (
           <TableCell
