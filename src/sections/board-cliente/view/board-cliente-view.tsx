@@ -11,7 +11,7 @@ import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
 import axios from 'axios';
 
-export function OverviewAnalyticsView() {
+export function BoardClienteView() {
   const [products, setProducts] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

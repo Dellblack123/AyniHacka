@@ -10,6 +10,6 @@ export type ConfigValue = {
 // ----------------------------------------------------------------------
 
 export const CONFIG: ConfigValue = {
-  appName: 'Bisoshi',
+  appName: 'Verox',
   appVersion: packageJson.version,
 };

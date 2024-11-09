@@ -7,6 +7,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { varAlpha } from 'src/theme/styles';
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { BoardClienteView } from 'src/sections/board-cliente/view';
 
 // ----------------------------------------------------------------------
 
@@ -14,8 +15,10 @@ export const RegisterPage =  lazy( () => import('src/pages/user-register'));
 export const HomePage = lazy(() => import('src/pages/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const ClientePage = lazy(() => import('src/pages/client'));
+export const BoardClientePage = lazy(() => import('src/pages/board-cliente'));
 export const ProductPage = lazy(() => import('src/pages/product'));
-export const CoursesPage = lazy(() => import('src/pages/courses'))
+export const CoursesPage = lazy(() => import('src/pages/courses'));
+export const ChatbotPage = lazy(() => import('src/pages/chatbot'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
@@ -47,8 +50,10 @@ export function Router() {
       children: [
         { path: 'dashboard', element: <HomePage /> },
         { path: 'client', element: <ClientePage /> },
+        { path: 'board-cliente', element: <BoardClientePage /> },
         { path: 'product', element: <ProductPage /> },
         { path: 'course', element: <CoursesPage /> },
+        { path: 'chatbot', element: <ChatbotPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },
