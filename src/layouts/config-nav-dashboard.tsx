@@ -21,12 +21,12 @@ export const navData = [
   {
     title: 'Board Cliente',
     path: '/board-cliente',
-    icon: icon('/customers'),
+    icon: icon('/board-cliente'),
   },
   {
     title: 'Productos',
     path: '/product',
-    icon: icon('/customers'),
+    icon: icon('/product'),
   },
   {
     title: 'Cursos',

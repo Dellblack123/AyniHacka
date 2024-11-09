@@ -3,13 +3,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import Grid from '@mui/material/Unstable_Grid2';
-
+import axios from 'axios';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { AnalyticsCurrentVisits } from '../analytics-current-visits';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
-import axios from 'axios';
 
 export function BoardClienteView() {
   const [products, setProducts] = useState<any[]>([]);
