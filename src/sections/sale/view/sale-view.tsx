@@ -11,78 +11,93 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import Drawer from '@mui/material/Drawer';
 import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableNoData } from '../table-no-data';
-import { ClientTableRow } from '../sale-table-row';
+import { SaleTableRow } from '../sale-table-row';
 import { ProductTableHead } from '../sale-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
-import { ClientTableToolbar } from '../sale-table-toolbar';
+import { SaleTableToolbar } from '../sale-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
-import type { SaleProps } from '../sale-table-row';
+export type SaleProps = {
+  id: string;
+  client: {
+    id: string;
+    name: string;
+  };
+  product: {
+    id: string;
+    name: string;
+  };
+  quantity: number;
+  totalAmount: number;
+};
+
+type Client = {
+  id: string;
+  name: string;
+};
+
+type Product = {
+  id: string;
+  name: string;
+};
+
 import { useTable } from '../use-table';
 
 export function SaleView() {
   const table = useTable();
-  const [clients, setClients] = useState<SaleProps[]>([]);
+  const [sales, setSales] = useState<SaleProps[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [filterName, setFilterName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [newClient, setNewClient] = useState({
+  const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [newSale, setNewSale] = useState<SaleProps>({
     id: '',
-    customerSegment: '',
-    name: '',
-    clientType: '',
-    region: '',
-    city: '',
-    zone: '',
-    contact: '',
+    client: { id: '', name: '' },
+    product: { id: '', name: '' },
+    quantity: 0,
+    totalAmount: 0,
   });
 
   const handleOpenDrawer = () => setDrawerOpen(true);
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
     setIsEditing(false);
-    setSelectedClientId(null);
-    setNewClient({
+    setSelectedSaleId(null);
+    setNewSale({
       id: '',
-      customerSegment: '',
-      name: '',
-      clientType: '',
-      region: '',
-      city: '',
-      zone: '',
-      contact: '',
+      client: { id: '', name: '' },
+      product: { id: '', name: '' },
+      quantity: 0,
+      totalAmount: 0,
     });
   };
 
-  const handleSaveClient = async () => {
+  const handleSaveSale = async () => {
     if (isEditing) {
-      await handleUpdateClient();
+      await handleUpdateSale();
     } else {
-      await handleCreateClient();
+      await handleCreateSale();
     }
   };
 
-  const handleCreateClient = async () => {
+  const handleCreateSale = async () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const response = await axios.post(
-          'https://backend-ayni.azurewebsites.net/api/clients',
+          'https://backend-ayni.azurewebsites.net/api/sales/create',
           {
-            id: newClient.id,
-            name: newClient.name,
-            customerSegment: newClient.customerSegment,
-            clientType: newClient.clientType,
-            region: newClient.region,
-            city: newClient.city,
-            zone: newClient.zone,
-            contact: newClient.contact,
+            clientId: newSale.client.id,
+            productId: newSale.product.id,
+            quantity: newSale.quantity,
           },
           {
             headers: {
@@ -92,29 +107,24 @@ export function SaleView() {
           }
         );
 
-        setClients([...clients, response.data]);
+        setSales([...sales, response.data]);
         handleCloseDrawer();
       } catch (error) {
-        console.error('Error creating client:', error);
+        console.error('Error creating sale:', error);
       }
     }
   };
 
-  const handleUpdateClient = async () => {
+  const handleUpdateSale = async () => {
     const token = localStorage.getItem('token');
-    if (token && selectedClientId) {
+    if (token && selectedSaleId) {
       try {
         const response = await axios.put(
-          `https://backend-ayni.azurewebsites.net/api/clients/${selectedClientId}`,
+          `https://backend-ayni.azurewebsites.net/api/sales/update/${selectedSaleId}`,
           {
-            id: newClient.id,
-            customerSegment: newClient.customerSegment,
-            name: newClient.name,
-            clientType: newClient.clientType,
-            region: newClient.region,
-            city: newClient.city,
-            zone: newClient.zone,
-            contact: newClient.contact,
+            clientId: newSale.client.id,
+            productId: newSale.product.id,
+            quantity: newSale.quantity,
           },
           {
             headers: {
@@ -124,29 +134,20 @@ export function SaleView() {
           }
         );
 
-        setClients(clients.map((client) =>
-          client.id === selectedClientId ? response.data : client
+        setSales(sales.map((sale) =>
+          sale.id === selectedSaleId ? response.data : sale
         ));
         handleCloseDrawer();
       } catch (error) {
-        console.error('Error updating client:', error);
+        console.error('Error updating sale:', error);
       }
     }
   };
 
-  const handleEdit = (client: SaleProps) => {
-    setSelectedClientId(client.id);
+  const handleEdit = (sale: SaleProps) => {
+    setSelectedSaleId(sale.id);
     setIsEditing(true);
-    setNewClient({
-      id: client.id,
-      customerSegment: client.customerSegment,
-      name: client.name,
-      clientType: client.clientType,
-      region: client.region,
-      city: client.city,
-      zone: client.zone,
-      contact: client.contact,
-    });
+    setNewSale(sale);
     handleOpenDrawer();
   };
 
@@ -154,17 +155,31 @@ export function SaleView() {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        await axios.delete(`https://backend-ayni.azurewebsites.net/api/clients/${id}`, {
+        await axios.delete(`https://backend-ayni.azurewebsites.net/api/sales/delete/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setClients(clients.filter((client) => client.id !== id));
+        setSales(sales.filter((sale) => sale.id !== id));
       } catch (error) {
-        console.error('Error deleting client:', error);
+        console.error('Error deleting sale:', error);
       }
     }
   };
 
   useEffect(() => {
+    const fetchSales = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('https://backend-ayni.azurewebsites.net/api/sales', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setSales(response.data);
+        } catch (error) {
+          console.error('Error fetching sales:', error);
+        }
+      }
+    };
+
     const fetchClients = async () => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -178,11 +193,28 @@ export function SaleView() {
         }
       }
     };
+
+    const fetchProducts = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('https://backend-ayni.azurewebsites.net/api/products', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setProducts(response.data);
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      }
+    };
+
+    fetchSales();
     fetchClients();
+    fetchProducts();
   }, []);
 
   const dataFiltered = applyFilter({
-    inputData: clients,
+    inputData: sales,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -193,7 +225,7 @@ export function SaleView() {
     <DashboardContent>
       <Box display="flex" alignItems="center" mb={5}>
         <Typography variant="h4" flexGrow={1}>
-          Clientes
+          Ventas
         </Typography>
         <Button
           variant="contained"
@@ -204,12 +236,12 @@ export function SaleView() {
             handleOpenDrawer();
           }}
         >
-          Nuevo Cliente
+          Nueva Venta
         </Button>
       </Box>
 
       <Card>
-        <ClientTableToolbar
+        <SaleTableToolbar
           numSelected={table.selected.length}
           filterName={filterName}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,27 +252,25 @@ export function SaleView() {
 
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 1200 }}>
+            <Table sx={{ minWidth: 800 }}>
               <ProductTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={clients.length}
+                rowCount={sales.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    clients.map((client) => client.id)
+                    sales.map((sale) => sale.id)
                   )
                 }
                 headLabel={[
-                  { id: 'name', label: 'Nombre' },
-                  { id: 'clientType', label: 'Tipo de Cliente' },
-                  { id: 'city', label: 'Ciudad' },
-                  { id: 'region', label: 'Región' },
-                  { id: 'zone', label: 'Zona' },
-                  { id: 'contact', label: 'Contacto' },
-                  { id: 'customerSegment', label: 'Segmento de Cliente' },
+                  { id: 'clientId', label: 'RUC / DNI' },
+                  { id: 'clientName', label: 'Nombre Cliente' },
+                  { id: 'productName', label: 'Producto' },
+                  { id: 'quantity', label: 'Cantidad' },
+                  { id: 'totalAmount', label: 'Monto Total' },
                   { id: '' },
                 ]}
               />
@@ -251,7 +281,7 @@ export function SaleView() {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ClientTableRow
+                    <SaleTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
@@ -263,7 +293,7 @@ export function SaleView() {
 
                 <TableEmptyRows
                   height={68}
-                  emptyRows={emptyRows(table.page, table.rowsPerPage, clients.length)}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, sales.length)}
                 />
 
                 {notFound && <TableNoData searchQuery={filterName} />}
@@ -275,7 +305,7 @@ export function SaleView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={clients.length}
+          count={sales.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -286,66 +316,38 @@ export function SaleView() {
       <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
         <Box p={3} width={300} role="presentation">
           <Typography variant="h6" gutterBottom>
-            {isEditing ? 'Actualizar Cliente' : 'Nuevo Cliente'}
+            {isEditing ? 'Actualizar Venta' : 'Nueva Venta'}
           </Typography>
-          <TextField
-            label="DNI / RUC"
-            fullWidth
-            margin="normal"
-            value={newClient.id}
-            onChange={(e) => setNewClient({ ...newClient, id: e.target.value })}
+          <Autocomplete
+            options={clients}
+            getOptionLabel={(option) => option.name}
+            value={clients.find((client) => client.id === newSale.client.id) || null} // Set selected client
+            onChange={(event, value) => setNewSale({
+              ...newSale,
+              client: { id: value?.id || '', name: value?.name || '' },
+            })}
+            renderInput={(params) => <TextField {...params} label="Nombre Cliente" margin="normal" fullWidth />}
+          />
+          <Autocomplete
+            options={products}
+            getOptionLabel={(option) => option.name}
+            value={products.find((product) => product.id === newSale.product.id) || null} // Set selected product
+            onChange={(event, value) => setNewSale({
+              ...newSale,
+              product: { id: value?.id || '', name: value?.name || '' },
+            })}
+            renderInput={(params) => <TextField {...params} label="Producto" margin="normal" fullWidth />}
           />
           <TextField
-            label="Segmento de Cliente"
+            label="Cantidad"
             fullWidth
             margin="normal"
-            value={newClient.customerSegment}
-            onChange={(e) => setNewClient({ ...newClient, customerSegment: e.target.value })}
-          />
-          <TextField
-            label="Nombre"
-            fullWidth
-            margin="normal"
-            value={newClient.name}
-            onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-          />
-          <TextField
-            label="Tipo de Cliente"
-            fullWidth
-            margin="normal"
-            value={newClient.clientType}
-            onChange={(e) => setNewClient({ ...newClient, clientType: e.target.value })}
-          />
-          <TextField
-            label="Región"
-            fullWidth
-            margin="normal"
-            value={newClient.region}
-            onChange={(e) => setNewClient({ ...newClient, region: e.target.value })}
-          />
-          <TextField
-            label="Ciudad"
-            fullWidth
-            margin="normal"
-            value={newClient.city}
-            onChange={(e) => setNewClient({ ...newClient, city: e.target.value })}
-          />
-          <TextField
-            label="Zona"
-            fullWidth
-            margin="normal"
-            value={newClient.zone}
-            onChange={(e) => setNewClient({ ...newClient, zone: e.target.value })}
-          />
-          <TextField
-            label="Contacto"
-            fullWidth
-            margin="normal"
-            value={newClient.contact}
-            onChange={(e) => setNewClient({ ...newClient, contact: e.target.value })}
+            type="number"
+            value={newSale.quantity}
+            onChange={(e) => setNewSale({ ...newSale, quantity: parseInt(e.target.value) })}
           />
           <Box mt={2} display="flex" justifyContent="flex-end">
-            <Button variant="contained" onClick={handleSaveClient}>
+            <Button variant="contained" onClick={handleSaveSale}>
               {isEditing ? 'Actualizar' : 'Guardar'}
             </Button>
           </Box>
