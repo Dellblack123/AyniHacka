@@ -96,7 +96,7 @@ export function ChatbotView() {
         'in-0': pregunta,
         user_id: 'germanmp1002@gmail.com',
       });
-
+      
       const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuestaProcesada };
       setHistorial((prevHistorial) => [...prevHistorial, nuevaRespuesta]);
     } catch (error: any) {

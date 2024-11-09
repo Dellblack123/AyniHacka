@@ -23,6 +23,8 @@ import { TableEmptyRows } from '../table-empty-rows';
 import { SaleTableToolbar } from '../sale-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
+import { useTable } from '../use-table';
+
 export type SaleProps = {
   id: string;
   client: {
@@ -47,7 +49,6 @@ type Product = {
   name: string;
 };
 
-import { useTable } from '../use-table';
 
 export function SaleView() {
   const table = useTable();
@@ -344,7 +345,7 @@ export function SaleView() {
             margin="normal"
             type="number"
             value={newSale.quantity}
-            onChange={(e) => setNewSale({ ...newSale, quantity: parseInt(e.target.value) })}
+            onChange={(e) => setNewSale({ ...newSale, quantity: parseInt(e.target.value, 10) })}
           />
           <Box mt={2} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handleSaveSale}>
