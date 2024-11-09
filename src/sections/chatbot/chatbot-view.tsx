@@ -66,7 +66,7 @@ export function ChatbotView() {
       }
 
       const data = await response.json();
-      const respuestaOriginal = data.outputs?.['out-0'] || respuestasPredefinidas.default;
+      const respuestaOriginal = data.outputs?.['out-1'] || respuestasPredefinidas.default;
       const respuestaProcesada = procesarRespuesta(respuestaOriginal);
 
       const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuestaProcesada };
