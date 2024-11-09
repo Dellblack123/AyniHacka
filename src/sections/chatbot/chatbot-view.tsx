@@ -18,8 +18,38 @@ type HistorialItem = {
   texto: string;
 };
 
-// Función para realizar la consulta a la APIs
-// Función para consultar la API y procesar la respuesta
+// Función para procesar la respuesta y eliminar contenido no deseado
+function procesarRespuesta(respuesta: string): string {
+  // Elimina cualquier contenido dentro de etiquetas "<citations>"
+  respuesta = respuesta.replace(/<citations>.*?<\/citations>/g, '');
+
+  // Elimina referencias como "[^0.1.0]"
+  respuesta = respuesta.replace(/\[\^[^\]]*\]/g, '');
+
+  // Elimina metadatos no deseados (títulos o secciones repetidas)
+  respuesta = respuesta.replace(/Title:.*Content:.*/g, '');
+
+  // Agrega saltos de línea después de cada punto final o dos puntos
+  respuesta = respuesta.replace(/(\.|\:)\s*/g, '$1\n\n');
+
+  // Convierte listas numeradas (1., 2., etc.) en texto con negritas
+  respuesta = respuesta.replace(/^(\d+\.)\s*(.*)$/gm, '**$1** $2');
+
+  // Formatea títulos subrayándolos si empiezan con un "#"
+  respuesta = respuesta.replace(/^(#.*)$/gm, '___$1___');
+
+  // Elimina líneas repetidas
+  const lineas = respuesta.split('\n');
+  const unicas = [...new Set(lineas)];
+  respuesta = unicas.join('\n');
+
+  // Elimina espacios innecesarios y retorna la respuesta limpia
+  return respuesta.trim();
+}
+
+
+
+// Función para realizar la consulta a la API
 async function query(data: Record<string, string>): Promise<string> {
   try {
     const response = await fetch(
@@ -41,52 +71,6 @@ async function query(data: Record<string, string>): Promise<string> {
     const result = await response.json();
 
     // Procesa y retorna la respuesta limpia
-    return procesarRespuesta(result.outputs?.['out-0'] || 'No se recibió respuesta de la API');
-  } catch (error: any) {
-    console.error('Error al consultar la API:', error);
-    throw new Error('Error al obtener la respuesta. Por favor, inténtalo nuevamente.');
-  }
-}
-
-
-export function ChatbotView() {
-  const [historial, setHistorial] = useState<HistorialItem[]>([]);
-  const [pregunta, setPregunta] = useState('');
-  const [loading, setLoading] = useState(false);
-
-// Función para procesar la respuesta y eliminar contenido no deseado
-function procesarRespuesta(respuesta: string): string {
-  // Elimina cualquier contenido dentro de etiquetas "<citations>"
-  respuesta = respuesta.replace(/<citations>.*?<\/citations>/g, '');
-  // Elimina referencias como "[^0.1.0]"
-  respuesta = respuesta.replace(/\[\^[^\]]*\]/g, '');
-  // Elimina otros metadatos no deseados (opcional)
-  respuesta = respuesta.replace(/Title:.*Content:.*/g, '');
-  // Retorna la respuesta limpia
-  return respuesta.trim();
-}
-
-// Modifica la función de manejo para usar este procesamiento
-async function query(data: Record<string, string>): Promise<string> {
-  try {
-    const response = await fetch(
-      'https://api.stack-ai.com/inference/v0/run/1cdaa2ca-86d1-408e-b311-af8274d55d9c/672f6cff7c797a2d36e920a1',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer 46c4878c-4945-4237-9a03-9370eeab5ef7',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-
-    const result = await response.json();
-    // Procesa la respuesta recibida
     return procesarRespuesta(result.outputs?.['out-1'] || 'No se recibió respuesta de la API');
   } catch (error: any) {
     console.error('Error al consultar la API:', error);
@@ -94,21 +78,25 @@ async function query(data: Record<string, string>): Promise<string> {
   }
 }
 
+export function ChatbotView() {
+  const [historial, setHistorial] = useState<HistorialItem[]>([]);
+  const [pregunta, setPregunta] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSendClick = async () => {
     if (!pregunta.trim()) return;
-  
+
     const nuevaPregunta: HistorialItem = { tipo: 'pregunta', texto: pregunta };
     setHistorial((prevHistorial) => [...prevHistorial, nuevaPregunta]);
     setLoading(true);
-  
+
     try {
       // Llama a la API y procesa la respuesta
       const respuestaProcesada = await query({
         'in-0': pregunta,
         user_id: 'germanmp1002@gmail.com',
       });
-  
+
       const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuestaProcesada };
       setHistorial((prevHistorial) => [...prevHistorial, nuevaRespuesta]);
     } catch (error: any) {
@@ -122,7 +110,6 @@ async function query(data: Record<string, string>): Promise<string> {
       setPregunta('');
     }
   };
-  
 
   return (
     <Container sx={{ mt: 5 }}>
