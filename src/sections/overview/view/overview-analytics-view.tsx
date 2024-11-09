@@ -227,7 +227,7 @@ const averageUnitPrice = sales.length
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Promedio Precio Unitario"
+            title="Promedio Precio"
             percent={grossProfitMargin}
             total={averageUnitPrice}
             color="error"
