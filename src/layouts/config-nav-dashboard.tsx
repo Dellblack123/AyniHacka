@@ -26,7 +26,12 @@ export const navData = [
   {
     title: 'Cursos',
     path: '/course',
-    icon: icon('/customers'),
+    icon: icon('/course'),
+  },
+  {
+    title: 'Chatbot',
+    path: '/chatbot',
+    icon: icon('/bot'),
   },
   {
     title: 'Sign in',
