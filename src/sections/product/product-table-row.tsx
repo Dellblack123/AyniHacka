@@ -29,9 +29,11 @@ type ProductTableRowProps = {
   row: ProductProps;
   selected: boolean;
   onSelectRow: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 };
 
-export function ProductTableRow({ row, selected, onSelectRow }: ProductTableRowProps) {
+export function ProductTableRow({ row, selected, onSelectRow, onEdit, onDelete }: ProductTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -53,13 +55,13 @@ export function ProductTableRow({ row, selected, onSelectRow }: ProductTableRowP
         </TableCell>
 
         <TableCell>{row.quantity}</TableCell>
-        <TableCell>{row.unitOfMeasure}</TableCell>
-        <TableCell>{`S/. ${row.cost.toFixed(2)}` }</TableCell>
-        <TableCell>{`S/. ${row.price.toFixed(2)}`}</TableCell>
-        <TableCell>{row.category}</TableCell>
-        <TableCell>{`S/. ${row.totalPrice.toFixed(2)}`}</TableCell>
-        <TableCell>{`S/. ${row.totalCost.toFixed(2)}`}</TableCell>
-        <TableCell>{`S/. ${row.totalProfit.toFixed(2)}`}</TableCell>
+        <TableCell align='center'>{row.unitOfMeasure}</TableCell>
+        <TableCell align='center'>{`S/. ${row.cost.toFixed(2)}` }</TableCell>
+        <TableCell align='center'>{`S/. ${row.price.toFixed(2)}`}</TableCell>
+        <TableCell align='center'>{row.category}</TableCell>
+        <TableCell align='center'>{`S/. ${row.totalPrice.toFixed(2)}`}</TableCell>
+        <TableCell align='center'>{`S/. ${row.totalCost.toFixed(2)}`}</TableCell>
+        <TableCell align='center'>{`S/. ${row.totalProfit.toFixed(2)}`}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
@@ -91,12 +93,11 @@ export function ProductTableRow({ row, selected, onSelectRow }: ProductTableRowP
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={() => { onEdit(); handleClosePopover(); }}>
             <Iconify icon="solar:pen-bold" />
             Editar
           </MenuItem>
-
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => { onDelete(); handleClosePopover(); }} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Eliminar
           </MenuItem>

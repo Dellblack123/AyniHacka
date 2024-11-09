@@ -30,19 +30,142 @@ export function ProductView() {
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [filterName, setFilterName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [newProduct, setNewProduct] = useState({
     name: '',
-    quantity: 0,
+    quantity: '' as number | string,
     unitOfMeasure: '',
-    cost: 0,
-    price: 0,
+    cost: '' as number | string,
+    price: '' as number | string,
     category: '',
   });
 
-  // Función para abrir el drawer
   const handleOpenDrawer = () => setDrawerOpen(true);
-  // Función para cerrar el drawer
-  const handleCloseDrawer = () => setDrawerOpen(false);
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setIsEditing(false);
+    setSelectedProductId(null);
+    setNewProduct({
+      name: '',
+      quantity: '',
+      unitOfMeasure: '',
+      cost: '',
+      price: '',
+      category: '',
+    });
+  };
+
+  const handleSaveProduct = async () => {
+    if (isEditing) {
+      await handleUpdateProduct();
+    } else {
+      await handleCreateProduct();
+    }
+  };
+
+  const handleCreateProduct = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.post(
+          'https://backend-ayni.azurewebsites.net/api/products/create',
+          {
+            name: newProduct.name,
+            quantity: newProduct.quantity,
+            unitOfMeasure: newProduct.unitOfMeasure,
+            cost: newProduct.cost,
+            price: newProduct.price,
+            category: newProduct.category,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        // Añadir el nuevo producto a la lista y cerrar el drawer
+        setProducts([...products, response.data]);
+        handleCloseDrawer();
+      } catch (error) {
+        console.error('Error creating product:', error);
+      }
+    }
+  };
+
+  const handleUpdateProduct = async () => {
+    const token = localStorage.getItem('token');
+    if (token && selectedProductId) {
+      try {
+        const response = await axios.put(
+          `https://backend-ayni.azurewebsites.net/api/products/update/${selectedProductId}`,
+          {
+            name: newProduct.name,
+            quantity: newProduct.quantity,
+            unitOfMeasure: newProduct.unitOfMeasure,
+            cost: newProduct.cost,
+            price: newProduct.price,
+            category: newProduct.category,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        setProducts(products.map((product) =>
+          product.id === selectedProductId ? response.data : product
+        ));
+        handleCloseDrawer();
+      } catch (error) {
+        console.error('Error updating product:', error);
+      }
+    }
+  };
+
+  const handleEdit = (product: ProductProps) => {
+    setSelectedProductId(product.id);
+    setIsEditing(true);
+    setNewProduct({
+      name: product.name,
+      quantity: product.quantity,
+      unitOfMeasure: product.unitOfMeasure,
+      cost: product.cost,
+      price: product.price,
+      category: product.category,
+    });
+    handleOpenDrawer();
+  };
+
+  const handleDelete = async (id: string) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        await axios.delete(`https://backend-ayni.azurewebsites.net/api/products/delete/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setProducts(products.filter((product) => product.id !== id));
+
+        if (token) {
+          try {
+            const response = await axios.get('https://backend-ayni.azurewebsites.net/api/products', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setProducts(response.data);
+          } catch (error) {
+            console.error('Error fetching products:', error);
+          }
+        }
+
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -50,9 +173,7 @@ export function ProductView() {
       if (token) {
         try {
           const response = await axios.get('https://backend-ayni.azurewebsites.net/api/products', {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
           });
           setProducts(response.data);
         } catch (error) {
@@ -81,7 +202,10 @@ export function ProductView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={handleOpenDrawer}
+          onClick={() => {
+            setIsEditing(false);
+            handleOpenDrawer();
+          }}
         >
           Nuevo Producto
         </Button>
@@ -137,6 +261,8 @@ export function ProductView() {
                       row={row}
                       selected={table.selected.includes(row.id)}
                       onSelectRow={() => table.onSelectRow(row.id)}
+                      onEdit={() => handleEdit(row)}
+                      onDelete={() => handleDelete(row.id)}
                     />
                   ))}
 
@@ -166,7 +292,7 @@ export function ProductView() {
       <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
         <Box p={3} width={300} role="presentation">
           <Typography variant="h6" gutterBottom>
-            Nuevo Producto
+          {isEditing ? 'Actualizar Producto' : 'Nuevo Producto'}
           </Typography>
           <TextField
             label="Nombre"
@@ -214,8 +340,8 @@ export function ProductView() {
             onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
           />
           <Box mt={2} display="flex" justifyContent="flex-end">
-            <Button variant="contained" onClick={handleCloseDrawer}>
-              Guardar
+            <Button variant="contained" onClick={handleSaveProduct}>
+            {isEditing ? 'Actualizar' : 'Guardar'}
             </Button>
           </Box>
         </Box>
