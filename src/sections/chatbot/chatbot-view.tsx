@@ -18,7 +18,7 @@ type HistorialItem = {
   texto: string;
 };
 
-// Función para realizar la consulta a la API
+// Función para realizar la consulta a la APIs
 // Función para consultar la API y procesar la respuesta
 async function query(data: Record<string, string>): Promise<string> {
   try {
