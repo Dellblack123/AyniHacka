@@ -19,6 +19,11 @@ export const navData = [
     icon: icon('/customers'),
   },
   {
+    title: 'Board Cliente',
+    path: '/board-cliente',
+    icon: icon('/customers'),
+  },
+  {
     title: 'Productos',
     path: '/product',
     icon: icon('/customers'),
