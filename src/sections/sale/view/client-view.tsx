@@ -16,18 +16,18 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableNoData } from '../table-no-data';
-import { ClientTableRow } from '../client-table-row';
-import { ProductTableHead } from '../client-table-head';
+import { ClientTableRow } from '../sale-table-row';
+import { ProductTableHead } from '../sale-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
-import { ClientTableToolbar } from '../client-table-toolbar';
+import { ClientTableToolbar } from '../sale-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
-import type { ClientProps } from '../client-table-row';
+import type { SaleProps } from '../sale-table-row';
 import { useTable } from '../use-table';
 
-export function ClientView() {
+export function SaleView() {
   const table = useTable();
-  const [clients, setClients] = useState<ClientProps[]>([]);
+  const [clients, setClients] = useState<SaleProps[]>([]);
   const [filterName, setFilterName] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -134,7 +134,7 @@ export function ClientView() {
     }
   };
 
-  const handleEdit = (client: ClientProps) => {
+  const handleEdit = (client: SaleProps) => {
     setSelectedClientId(client.id);
     setIsEditing(true);
     setNewClient({

@@ -26,7 +26,12 @@ export const navData = [
   {
     title: 'Productos',
     path: '/product',
-    icon: icon('/customers'),
+    icon: icon('/products'),
+  },
+  {
+    title: 'Ventas',
+    path: '/sale',
+    icon: icon('/sale'),
   },
   {
     title: 'Cursos',
