@@ -19,6 +19,7 @@ type HistorialItem = {
 };
 
 // Función para realizar la consulta a la API
+// Función para consultar la API y procesar la respuesta
 async function query(data: Record<string, string>): Promise<string> {
   try {
     const response = await fetch(
@@ -38,33 +39,76 @@ async function query(data: Record<string, string>): Promise<string> {
     }
 
     const result = await response.json();
-    // Retorna solo el valor de "out-0"
-    return result.outputs?.['out-1'] || 'No se recibió respuesta de la API';
+
+    // Procesa y retorna la respuesta limpia
+    return procesarRespuesta(result.outputs?.['out-0'] || 'No se recibió respuesta de la API');
   } catch (error: any) {
     console.error('Error al consultar la API:', error);
     throw new Error('Error al obtener la respuesta. Por favor, inténtalo nuevamente.');
   }
 }
 
+
 export function ChatbotView() {
   const [historial, setHistorial] = useState<HistorialItem[]>([]);
   const [pregunta, setPregunta] = useState('');
   const [loading, setLoading] = useState(false);
 
+// Función para procesar la respuesta y eliminar contenido no deseado
+function procesarRespuesta(respuesta: string): string {
+  // Elimina cualquier contenido dentro de etiquetas "<citations>"
+  respuesta = respuesta.replace(/<citations>.*?<\/citations>/g, '');
+  // Elimina referencias como "[^0.1.0]"
+  respuesta = respuesta.replace(/\[\^[^\]]*\]/g, '');
+  // Elimina otros metadatos no deseados (opcional)
+  respuesta = respuesta.replace(/Title:.*Content:.*/g, '');
+  // Retorna la respuesta limpia
+  return respuesta.trim();
+}
+
+// Modifica la función de manejo para usar este procesamiento
+async function query(data: Record<string, string>): Promise<string> {
+  try {
+    const response = await fetch(
+      'https://api.stack-ai.com/inference/v0/run/1cdaa2ca-86d1-408e-b311-af8274d55d9c/672f6cff7c797a2d36e920a1',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer 46c4878c-4945-4237-9a03-9370eeab5ef7',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const result = await response.json();
+    // Procesa la respuesta recibida
+    return procesarRespuesta(result.outputs?.['out-1'] || 'No se recibió respuesta de la API');
+  } catch (error: any) {
+    console.error('Error al consultar la API:', error);
+    throw new Error('Error al obtener la respuesta. Por favor, inténtalo nuevamente.');
+  }
+}
+
+
   const handleSendClick = async () => {
     if (!pregunta.trim()) return;
-
+  
     const nuevaPregunta: HistorialItem = { tipo: 'pregunta', texto: pregunta };
     setHistorial((prevHistorial) => [...prevHistorial, nuevaPregunta]);
     setLoading(true);
-
+  
     try {
-      // Obtén solo la respuesta relevante de la API
+      // Llama a la API y procesa la respuesta
       const respuestaProcesada = await query({
         'in-0': pregunta,
         user_id: 'germanmp1002@gmail.com',
       });
-
+  
       const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuestaProcesada };
       setHistorial((prevHistorial) => [...prevHistorial, nuevaRespuesta]);
     } catch (error: any) {
@@ -78,6 +122,7 @@ export function ChatbotView() {
       setPregunta('');
     }
   };
+  
 
   return (
     <Container sx={{ mt: 5 }}>
