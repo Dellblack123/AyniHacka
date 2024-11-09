@@ -5,38 +5,46 @@ import {
   Paper,
   List,
   ListItem,
-  ListItemText,
   TextField,
   Typography,
   Button,
   Card,
 } from '@mui/material';
 
+// Define el tipo de los elementos del historial
+type HistorialItem = {
+  tipo: 'pregunta' | 'respuesta';
+  texto: string;
+};
+
 export function ChatbotView() {
-  const [historial, setHistorial] = useState([]);
+  // Define el tipo del estado del historial
+  const [historial, setHistorial] = useState<HistorialItem[]>([]);
   const [pregunta, setPregunta] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const respuestasPredefinidas = {
+  const respuestasPredefinidas: Record<string, string> = {
     hola: '¡Hola! ¿En qué puedo ayudarte?',
     ayuda: 'Claro, estoy aquí para ayudarte. Por favor, dime más.',
     tiempo: 'Actualmente no tengo información del clima. ¡Pronto podré ayudarte con eso!',
     default: 'Lo siento, no entiendo tu pregunta. ¿Podrías reformularla?',
   };
+  
 
   const handleSendClick = () => {
     if (!pregunta.trim()) return;
 
-    const nuevaPregunta = { tipo: 'pregunta', texto: pregunta };
+    const nuevaPregunta: HistorialItem = { tipo: 'pregunta', texto: pregunta };
     setHistorial((prev) => [...prev, nuevaPregunta]);
     setPregunta('');
     setLoading(true);
 
     setTimeout(() => {
       const preguntaNormalizada = pregunta.trim().toLowerCase();
-      const respuesta = respuestasPredefinidas[preguntaNormalizada] || respuestasPredefinidas.default;
+      const respuesta =
+        respuestasPredefinidas[preguntaNormalizada] || respuestasPredefinidas.default;
 
-      const nuevaRespuesta = { tipo: 'respuesta', texto: respuesta };
+      const nuevaRespuesta: HistorialItem = { tipo: 'respuesta', texto: respuesta };
       setHistorial((prev) => [...prev, nuevaRespuesta]);
       setLoading(false);
     }, 500);
@@ -64,45 +72,44 @@ export function ChatbotView() {
       >
         {/* Historial de Chat */}
         <Paper
-  sx={{
-    p: 2,
-    height: 'calc(60vh - 100px)', // Ajusta el alto dinámicamente para reducir el espacio en blanco
-    overflowY: 'auto',
-    borderRadius: 2,
-    mb: 3,
-    backgroundColor: '#ffffff',
-    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  }}
->
-  <List>
-    {historial.map((item, index) => (
-      <ListItem
-      key={index}
-      sx={{
-        display: 'flex',
-        justifyContent: item.tipo === 'pregunta' ? 'flex-end' : 'flex-start',
-        mb: 1, // Espaciado entre mensajes
-      }}
-    >
-      <Box
-        sx={{
-          bgcolor: item.tipo === 'pregunta' ? '#d0eaff' : '#e8f5e9',
-          color: 'text.primary',
-          borderRadius: 2,
-          p: 1.5,
-          maxWidth: '70%', // Limita el ancho de las burbujas
-          textAlign: 'left',
-          wordWrap: 'break-word', // Asegura que el texto largo se ajuste en la burbuja
-          overflowWrap: 'break-word', // Compatible con navegadores antiguos
-        }}
-      >
-        {item.texto}
-      </Box>
-    </ListItem>
-    
-    ))}
-  </List>
-</Paper>
+          sx={{
+            p: 2,
+            height: 'calc(60vh - 100px)',
+            overflowY: 'auto',
+            borderRadius: 2,
+            mb: 3,
+            backgroundColor: '#ffffff',
+            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <List>
+            {historial.map((item, index) => (
+              <ListItem
+                key={index}
+                sx={{
+                  display: 'flex',
+                  justifyContent: item.tipo === 'pregunta' ? 'flex-end' : 'flex-start',
+                  mb: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    bgcolor: item.tipo === 'pregunta' ? '#d0eaff' : '#e8f5e9',
+                    color: 'text.primary',
+                    borderRadius: 2,
+                    p: 1.5,
+                    maxWidth: '70%',
+                    textAlign: 'left',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {item.texto}
+                </Box>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
 
         {/* Input de Pregunta */}
         <Box display="flex" gap={2}>
