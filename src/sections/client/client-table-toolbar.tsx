@@ -9,13 +9,13 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-type ClienteTableToolbarProps = {
+type ProductTableToolbarProps = {
   numSelected: number;
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function ClienteTableToolbar({ numSelected, filterName, onFilterName }: ClienteTableToolbarProps) {
+export function ClientTableToolbar({ numSelected, filterName, onFilterName }: ProductTableToolbarProps) {
   return (
     <Toolbar
       sx={{

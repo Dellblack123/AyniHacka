@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -8,31 +9,179 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Drawer from '@mui/material/Drawer';
+import TextField from '@mui/material/TextField';
 
-import { _clientes } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
-
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-
 import { TableNoData } from '../table-no-data';
-import { ClienteTableRow } from '../client-table-row';
-import { ClienteTableHead } from '../client-table-head';
+import { ClientTableRow } from '../client-table-row';
+import { ProductTableHead } from '../client-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
-import { ClienteTableToolbar } from '../client-table-toolbar';
+import { ClientTableToolbar } from '../client-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
-import type { ClienteProps } from '../client-table-row';
-
-// ----------------------------------------------------------------------
+import type { ClientProps } from '../client-table-row';
+import { useTable } from '../use-table';
 
 export function ClientView() {
   const table = useTable();
-
+  const [clients, setClients] = useState<ClientProps[]>([]);
   const [filterName, setFilterName] = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [newClient, setNewClient] = useState({
+    id: '',
+    customerSegment: '',
+    name: '',
+    clientType: '',
+    region: '',
+    city: '',
+    zone: '',
+    contact: '',
+  });
 
-  const dataFiltered: ClienteProps[] = applyFilter({
-    inputData: _clientes,
+  const handleOpenDrawer = () => setDrawerOpen(true);
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setIsEditing(false);
+    setSelectedClientId(null);
+    setNewClient({
+      customerSegment: '',
+      name: '',
+      clientType: '',
+      region: '',
+      city: '',
+      zone: '',
+      contact: '',
+    });
+  };
+
+  const handleSaveClient = async () => {
+    if (isEditing) {
+      await handleUpdateClient();
+    } else {
+      await handleCreateClient();
+    }
+  };
+
+  const handleCreateClient = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.post(
+          'https://backend-ayni.azurewebsites.net/api/clients',
+          {
+            id: newClient.id,
+            name: newClient.name,
+            customerSegment: newClient.customerSegment,
+            clientType: newClient.clientType,
+            region: newClient.region,
+            city: newClient.city,
+            zone: newClient.zone,
+            contact: newClient.contact,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        setClients([...clients, response.data]);
+        handleCloseDrawer();
+      } catch (error) {
+        console.error('Error creating client:', error);
+      }
+    }
+  };
+
+  const handleUpdateClient = async () => {
+    const token = localStorage.getItem('token');
+    if (token && selectedClientId) {
+      try {
+        const response = await axios.put(
+          `https://backend-ayni.azurewebsites.net/api/clients/${selectedClientId}`,
+          {
+            id: newClient.id,
+            customerSegment: newClient.customerSegment,
+            name: newClient.name,
+            clientType: newClient.clientType,
+            region: newClient.region,
+            city: newClient.city,
+            zone: newClient.zone,
+            contact: newClient.contact,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        setClients(clients.map((client) =>
+          client.id === selectedClientId ? response.data : client
+        ));
+        handleCloseDrawer();
+      } catch (error) {
+        console.error('Error updating client:', error);
+      }
+    }
+  };
+
+  const handleEdit = (client: ClientProps) => {
+    setSelectedClientId(client.id);
+    setIsEditing(true);
+    setNewClient({
+      id: client.id,
+      customerSegment: client.customerSegment,
+      name: client.name,
+      clientType: client.clientType,
+      region: client.region,
+      city: client.city,
+      zone: client.zone,
+      contact: client.contact,
+    });
+    handleOpenDrawer();
+  };
+
+  const handleDelete = async (id: string) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        await axios.delete(`https://backend-ayni.azurewebsites.net/api/clients/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setClients(clients.filter((client) => client.id !== id));
+      } catch (error) {
+        console.error('Error deleting client:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await axios.get('https://backend-ayni.azurewebsites.net/api/clients', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setClients(response.data);
+        } catch (error) {
+          console.error('Error fetching clients:', error);
+        }
+      }
+    };
+    fetchClients();
+  }, []);
+
+  const dataFiltered = applyFilter({
+    inputData: clients,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -49,13 +198,17 @@ export function ClientView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={() => {
+            setIsEditing(false);
+            handleOpenDrawer();
+          }}
         >
           Nuevo Cliente
         </Button>
       </Box>
 
       <Card>
-        <ClienteTableToolbar
+        <ClientTableToolbar
           numSelected={table.selected.length}
           filterName={filterName}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,25 +219,27 @@ export function ClientView() {
 
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <ClienteTableHead
+            <Table sx={{ minWidth: 1200 }}>
+              <ProductTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={_clientes.length}
+                rowCount={clients.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    _clientes.map((cliente) => cliente.id)
+                    clients.map((client) => client.id)
                   )
                 }
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'name', label: 'Nombre' },
+                  { id: 'clientType', label: 'Tipo de Cliente' },
+                  { id: 'city', label: 'Ciudad' },
+                  { id: 'region', label: 'Región' },
+                  { id: 'zone', label: 'Zona' },
+                  { id: 'contact', label: 'Contacto' },
+                  { id: 'customerSegment', label: 'Segmento de Cliente' },
                   { id: '' },
                 ]}
               />
@@ -95,17 +250,19 @@ export function ClientView() {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ClienteTableRow
+                    <ClientTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
                       onSelectRow={() => table.onSelectRow(row.id)}
+                      onEdit={() => handleEdit(row)}
+                      onDelete={() => handleDelete(row.id)}
                     />
                   ))}
 
                 <TableEmptyRows
                   height={68}
-                  emptyRows={emptyRows(table.page, table.rowsPerPage, _clientes.length)}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, clients.length)}
                 />
 
                 {notFound && <TableNoData searchQuery={filterName} />}
@@ -117,81 +274,82 @@ export function ClientView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={_clientes.length}
+          count={clients.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
+        <Box p={3} width={300} role="presentation">
+          <Typography variant="h6" gutterBottom>
+            {isEditing ? 'Actualizar Cliente' : 'Nuevo Cliente'}
+          </Typography>
+          <TextField
+            label="DNI / RUC"
+            fullWidth
+            margin="normal"
+            value={newClient.id}
+            onChange={(e) => setNewClient({ ...newClient, id: e.target.value })}
+          />
+          <TextField
+            label="Segmento de Cliente"
+            fullWidth
+            margin="normal"
+            value={newClient.customerSegment}
+            onChange={(e) => setNewClient({ ...newClient, customerSegment: e.target.value })}
+          />
+          <TextField
+            label="Nombre"
+            fullWidth
+            margin="normal"
+            value={newClient.name}
+            onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+          />
+          <TextField
+            label="Tipo de Cliente"
+            fullWidth
+            margin="normal"
+            value={newClient.clientType}
+            onChange={(e) => setNewClient({ ...newClient, clientType: e.target.value })}
+          />
+          <TextField
+            label="Región"
+            fullWidth
+            margin="normal"
+            value={newClient.region}
+            onChange={(e) => setNewClient({ ...newClient, region: e.target.value })}
+          />
+          <TextField
+            label="Ciudad"
+            fullWidth
+            margin="normal"
+            value={newClient.city}
+            onChange={(e) => setNewClient({ ...newClient, city: e.target.value })}
+          />
+          <TextField
+            label="Zona"
+            fullWidth
+            margin="normal"
+            value={newClient.zone}
+            onChange={(e) => setNewClient({ ...newClient, zone: e.target.value })}
+          />
+          <TextField
+            label="Contacto"
+            fullWidth
+            margin="normal"
+            value={newClient.contact}
+            onChange={(e) => setNewClient({ ...newClient, contact: e.target.value })}
+          />
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="contained" onClick={handleSaveClient}>
+              {isEditing ? 'Actualizar' : 'Guardar'}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </DashboardContent>
   );
-}
-
-// ----------------------------------------------------------------------
-
-export function useTable() {
-  const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('name');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-
-  const onSort = useCallback(
-    (id: string) => {
-      const isAsc = orderBy === id && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(id);
-    },
-    [order, orderBy]
-  );
-
-  const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
-    if (checked) {
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  }, []);
-
-  const onSelectRow = useCallback(
-    (inputValue: string) => {
-      const newSelected = selected.includes(inputValue)
-        ? selected.filter((value) => value !== inputValue)
-        : [...selected, inputValue];
-
-      setSelected(newSelected);
-    },
-    [selected]
-  );
-
-  const onResetPage = useCallback(() => {
-    setPage(0);
-  }, []);
-
-  const onChangePage = useCallback((event: unknown, newPage: number) => {
-    setPage(newPage);
-  }, []);
-
-  const onChangeRowsPerPage = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      onResetPage();
-    },
-    [onResetPage]
-  );
-
-  return {
-    page,
-    order,
-    onSort,
-    orderBy,
-    selected,
-    rowsPerPage,
-    onSelectRow,
-    onResetPage,
-    onChangePage,
-    onSelectAllRows,
-    onChangeRowsPerPage,
-  };
 }

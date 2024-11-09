@@ -1,4 +1,4 @@
-import type { ClienteProps } from './client-table-row';
+import type { ClientProps } from './client-table-row';
 
 // ----------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ export function getComparator<Key extends keyof any>(
 // ----------------------------------------------------------------------
 
 type ApplyFilterProps = {
-  inputData: ClienteProps[];
+  inputData: ClientProps[];
   filterName: string;
   comparator: (a: any, b: any) => number;
 };
